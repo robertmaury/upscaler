@@ -18,45 +18,50 @@ ENV CUDA_HOME=/usr/local/cuda
 ENV LD_LIBRARY_PATH=/usr/local/cuda/lib64:/usr/local/cuda/lib:/usr/local/lib:${LD_LIBRARY_PATH}
 ENV CUDA_PATH=/usr/local/cuda
 
-# Install build dependencies, compile plugins, and then remove build deps in a single layer
-RUN BUILD_DEPS="git build-essential meson ninja-build cmake pkg-config python3-dev cython3 autoconf automake libtool" && \
-    apt-get update && apt-get install -y --no-install-recommends \
-    $BUILD_DEPS \
+# Install build dependencies, then compile plugins in separate layers for caching and debugging
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    git build-essential meson ninja-build cmake pkg-config python3-dev cython3 \
+    autoconf automake libtool ca-certificates curl gnupg wget \
     ocl-icd-libopencl1 ocl-icd-opencl-dev \
     libzimg-dev libjpeg-turbo8-dev libpng-dev \
-    libavcodec-dev libavformat-dev libavutil-dev libswscale-dev \
-    && \
-    # --- Build Core VapourSynth Plugins --- \
-    # All plugins will be installed to ${VS_PLUGIN_DIR} \
-    \
-    # mvtools
-    git clone --depth=1 https://github.com/dubhater/vapoursynth-mvtools.git /tmp/mvtools && \
+    libavcodec-dev libavformat-dev libavutil-dev libswscale-dev
+
+# --- Build Core VapourSynth Plugins ---
+# Each plugin is built in its own layer to isolate errors and leverage caching.
+# All plugins will be installed to ${VS_PLUGIN_DIR}
+
+# mvtools
+RUN git clone --depth=1 https://github.com/dubhater/vapoursynth-mvtools.git /tmp/mvtools && \
     cd /tmp/mvtools && \
     meson setup build --buildtype=release --prefix=/usr/local --libdir="${VS_PLUGIN_DIR}" && \
     ninja -C build && ninja -C build install && \
-    \
-    # nnedi3cl (OpenCL-based interpolator used by QTGMC)
-    git clone --depth=1 https://github.com/HomeOfVapourSynthEvolution/VapourSynth-NNEDI3CL.git /tmp/nnedi3cl && \
+    rm -rf /tmp/mvtools
+
+# nnedi3cl
+RUN git clone --depth=1 https://github.com/HomeOfVapourSynthEvolution/VapourSynth-NNEDI3CL.git /tmp/nnedi3cl && \
     cd /tmp/nnedi3cl && \
     meson setup build --buildtype=release --prefix=/usr/local --libdir="${VS_PLUGIN_DIR}" && \
     ninja -C build && ninja -C build install && \
-    \
-    # fmtconv (use AUTOTOOLS in build/unix — NOT CMake here)
-    git clone --depth=1 https://gitlab.com/EleonoreMizo/fmtconv.git /tmp/fmtconv && \
+    rm -rf /tmp/nnedi3cl
+
+# fmtconv
+RUN git clone --depth=1 https://gitlab.com/EleonoreMizo/fmtconv.git /tmp/fmtconv && \
     cd /tmp/fmtconv/build/unix && \
     ./autogen.sh && \
     ./configure --prefix=/usr/local --libdir="${VS_PLUGIN_DIR}" && \
     make -j"$(nproc)" && make install && \
-    \
-    # TIVTC (fieldmatch/decimate for IVTC inside VS)
-    git clone --depth=1 https://github.com/dubhater/vapoursynth-tivtc.git /tmp/vs_tivtc && \
+    rm -rf /tmp/fmtconv
+
+# TIVTC
+RUN git clone --depth=1 https://github.com/dubhater/vapoursynth-tivtc.git /tmp/vs_tivtc && \
     cd /tmp/vs_tivtc && \
     ./autogen.sh && \
     ./configure --prefix=/usr/local --libdir="${VS_PLUGIN_DIR}" && \
     make -j"$(nproc)" && make install && \
-    \
-    # ---- BM3D-CUDA (VapourSynth-BM3DCUDA) ----
-    mkdir -p /tmp/bm3d && \
+    rm -rf /tmp/vs_tivtc
+
+# BM3D-CUDA
+RUN mkdir -p /tmp/bm3d && \
     curl -L https://github.com/WolframRhodium/VapourSynth-BM3DCUDA/archive/refs/tags/R2.15.tar.gz \
       | tar -xz -C /tmp/bm3d --strip-components=1 && \
     find /tmp/bm3d -name CMakeLists.txt -exec \
@@ -70,10 +75,14 @@ RUN BUILD_DEPS="git build-essential meson ninja-build cmake pkg-config python3-d
       -DCMAKE_CUDA_FLAGS="--use_fast_math" && \
     cmake --build /tmp/bm3d/build -j"$(nproc)" && \
     cmake --install /tmp/bm3d/build && \
-    \
-    # --- Cleanup --- \
-    cd / && rm -rf /tmp/* && \
-    apt-get purge -y --auto-remove $BUILD_DEPS && \
+    rm -rf /tmp/bm3d
+
+# --- Cleanup ---
+# This layer can be commented out during debugging to inspect the build environment
+RUN apt-get purge -y --auto-remove \
+      git build-essential meson ninja-build cmake pkg-config python3-dev cython3 \
+      autoconf automake libtool ca-certificates curl gnupg wget && \
+    apt-get autoremove -y && \
     rm -rf /var/lib/apt/lists/* && \
     ldconfig
 
