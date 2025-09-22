@@ -54,6 +54,9 @@ RUN git clone --depth=1 https://gitlab.com/EleonoreMizo/fmtconv.git /tmp/fmtconv
 
 # TIVTC
 RUN git clone --depth=1 https://github.com/dubhater/vapoursynth-tivtc.git /tmp/vs_tivtc && \
+    echo "--- Contents of /tmp/vs_tivtc ---" && \
+    ls -la /tmp/vs_tivtc && \
+    echo "---------------------------------" && \
     cd /tmp/vs_tivtc && \
     meson setup build --buildtype=release --prefix=/usr/local --libdir="${VS_PLUGIN_DIR}" && \
     ninja -C build && ninja -C build install && \
