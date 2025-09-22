@@ -4,7 +4,7 @@ set -euo pipefail
 VPY_SCRIPT="$1"
 INPUT="$2"
 OUTPUT="$3"
-TMP_OUT="${OUTPUT}.tmp"
+TMP_OUT=$(mktemp "${OUTPUT}.XXXXXX")
 
 # Preflight: input readability
 if [ ! -r "$INPUT" ]; then
@@ -54,3 +54,6 @@ vspipe -c y4m "$VPY_SCRIPT" "$INPUT" | \
     -color_primaries bt709 -color_trc bt709 -colorspace bt709 \
     "$TMP_OUT" \
   && mv -f "$TMP_OUT" "$OUTPUT"
+
+# Clean up the temporary file if the script is interrupted
+trap 'rm -f "$TMP_OUT"' EXIT

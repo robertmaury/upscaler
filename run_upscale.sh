@@ -16,7 +16,8 @@ if [[ "$OUTPUT" == "$INPUT" ]]; then
   exit 2
 fi
 
-TMP_OUT="${OUTPUT}.tmp"
+# No longer needed here, handled in container
+# TMP_OUT="${OUTPUT}.tmp"
 
 # Load env
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"

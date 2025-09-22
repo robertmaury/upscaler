@@ -1,0 +1,10 @@
+# Git files
+.git
+.gitignore
+
+# Local build artifacts and logs
+logs
+*.tmp
+
+# IDE files
+.vscode

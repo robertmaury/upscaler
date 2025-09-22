@@ -74,7 +74,6 @@ export DOCKER_RUN="docker run --rm --gpus all \
   -v $PWD/logs:/tmp \
   -v $PWD:$PWD -w $PWD \
   ${MODEL_MOUNT_OPTS} ${EXTRA_MOUNTS} \
-  -e VAPOURSYNTH_PLUGIN_PATH=/usr/local/lib/vapoursynth:/usr/local/lib:/usr/local/lib/x86_64-linux-gnu \
   -e SOURCE_IMPL=${SOURCE_IMPL} -e IVTC=${IVTC} \
   -e DENOISE_IMPL=${DENOISE_IMPL} -e BM3D_SIGMA=${BM3D_SIGMA} -e BM3D_RADIUS=${BM3D_RADIUS} \
   -e UPSCALE_IMPL=${UPSCALE_IMPL} -e FFMPEG_FRAMERATE=${FFMPEG_FRAMERATE} \

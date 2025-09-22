@@ -1,12 +1,5 @@
-# ---------------------------------------------
-# Child layer: add VS plugins & Python wrappers
-# ---------------------------------------------
-FROM pifroggi/vapoursynth:2025_09_05
-
-
-LABEL maintainer="Robert Maury <daquinox@gmail.com>"
-LABEL description="VapourSynth container with plugins for deinterlacing and upscaling."
-
+# Base image from NVIDIA
+FROM nvcr.io/nvidia/tensorrt:24.08-py3
 ARG DEBIAN_FRONTEND=noninteractive
 
 # Set consistent plugin path for all builds
@@ -20,13 +13,36 @@ ENV LD_LIBRARY_PATH=/usr/local/cuda/lib64:/usr/local/cuda/lib:/usr/local/lib:${L
 ENV CUDA_PATH=/usr/local/cuda
 
 # Install build and runtime dependencies
-RUN BUILD_DEPS="git build-essential meson ninja-build pkg-config python3-dev cython3" && \
-    apt-get update && apt-get install -y --no-install-recommends \
-    $BUILD_DEPS \
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    # Build tools
+    git build-essential meson ninja-build pkg-config python3-dev cython3 \
+    # VapourSynth dependencies
     curl ocl-icd-libopencl1 ocl-icd-opencl-dev \
     libzimg-dev libjpeg-turbo8-dev libpng-dev \
     libavcodec-dev libavformat-dev libavutil-dev libswscale-dev \
-    python3-pip python3-setuptools
+    # Python
+    python3-pip python3-setuptools \
+    # General utilities
+    p7zip-full x264 autoconf libtool yasm nasm clang ffmsindex libffms2-dev wget \
+    # Compression and development libraries
+    libssl-dev zlib1g-dev libbz2-dev libreadline-dev libncursesw5-dev \
+    xz-utils tk-dev libxml2-dev libxmlsec1-dev libffi-dev liblzma-dev \
+    libfftw3-dev
+
+# Upgrade pip and Install torch
+RUN python3 -m pip install --upgrade pip && \
+    python3 -m pip install --no-cache-dir --pre torch torchvision torchaudio --index-url https://download.pytorch.org/whl/nightly/cu121
+
+# Install VapourSynth R72
+RUN wget https://github.com/vapoursynth/vapoursynth/archive/refs/tags/R72.tar.gz && \
+    tar -zxvf R72.tar.gz && \
+    cd vapoursynth-R72 && \
+    ./autogen.sh && \
+    ./configure && \
+    make -j$(nproc) && \
+    make install && \
+    ldconfig && \
+    cd .. && rm -rf vapoursynth-R72 R72.tar.gz
 
 # Build nnedi3cl from source for Linux compatibility
 RUN git clone --depth=1 https://github.com/HomeOfVapourSynthEvolution/VapourSynth-NNEDI3CL.git /tmp/nnedi3cl && \
@@ -47,7 +63,7 @@ RUN git clone https://github.com/vapoursynth/vsrepo.git /tmp/vsrepo && \
     rm -rf /tmp/vsrepo
 
 # --- Python side: QTGMC script + CUDA wrappers for A/B ---
-RUN python3 -m pip install --no-cache-dir --upgrade pip setuptools vsutil && \
+RUN python3 -m pip install --no-cache-dir --upgrade setuptools vsutil && \
     python3 -m pip install --no-cache-dir \
     havsfunc vsrealesrgan vsbasicvsrpp basicsr facexlib gfpgan tqdm scipy
 
@@ -66,4 +82,3 @@ ENV BASICVSR_MODEL=/models/basicvsrpp/BasicVSRPP_x4_vimeo90k.pth
 # Add and set up the entrypoint script
 COPY entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod +x /usr/local/bin/entrypoint.sh
-
