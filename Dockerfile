@@ -19,7 +19,7 @@ ENV LD_LIBRARY_PATH=/usr/local/cuda/lib64:/usr/local/cuda/lib:/usr/local/lib:${L
 ENV CUDA_PATH=/usr/local/cuda
 
 # Install build dependencies, compile plugins, and then remove build deps in a single layer
-RUN BUILD_DEPS="git build-essential meson ninja-build cmake pkg-config python3-dev cython3" && \
+RUN BUILD_DEPS="git build-essential meson ninja-build cmake pkg-config python3-dev cython3 autoconf automake libtool" && \
     apt-get update && apt-get install -y --no-install-recommends \
     $BUILD_DEPS \
     ocl-icd-libopencl1 ocl-icd-opencl-dev \
