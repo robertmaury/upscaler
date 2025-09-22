@@ -44,6 +44,10 @@ RUN python -m pip install Cython meson ninja setuptools wheel \
 	onnx onnxruntime onnxruntime-gpu \
     opencv-python Pillow tensorboardX pyiqa einops positional_encodings timm PyTurboJPEG
 
+# Install FFmpeg8
+RUN add-apt-repository ppa:ubuntuhandbook1/ffmpeg8 && \
+    apt-get update && apt-get install -y ffmpeg libavcodec-dev
+
 # Install mmcv from source with support for 20-50 series gpus (below no longer supported with newest cuda)
 ENV MMCV_WITH_OPS=1 FORCE_CUDA=1 TORCH_CUDA_ARCH_LIST="7.5;8.6;8.9;12.0"
 RUN python -m pip -v install --no-cache-dir --force-reinstall --no-binary mmcv "mmcv>=2.0.0" --ignore-installed PyYAML
@@ -136,10 +140,6 @@ RUN mkdir -p /root/.config/xfe \
 
 # Remove Nvidia banner text wall
 RUN rm -f /opt/nvidia/entrypoint.d/*banner* /opt/nvidia/entrypoint.d/*.txt
-
-RUN apt install -y software-properties-common && \
-    add-apt-repository ppa:ubuntuhandbook1/ffmpeg8 && \
-    apt-get update && apt-get install -y ffmpeg libavcodec-dev
 
 # Add and set up the entrypoint script
 COPY entrypoint.sh /usr/local/bin/entrypoint.sh
