@@ -20,7 +20,7 @@ ENV CUDA_PATH=/usr/local/cuda
 
 # Install runtime dependencies and vsrepo for simplified plugin management
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    curl \
+    git curl \
     ocl-icd-libopencl1 ocl-icd-opencl-dev \
     libzimg-dev libjpeg-turbo8-dev libpng-dev \
     libavcodec-dev libavformat-dev libavutil-dev libswscale-dev \
@@ -28,42 +28,24 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 # Install VapourSynth plugins using vsrepo to avoid build complexities
-RUN python3 -m pip install --no-cache-dir vsrepo && \
-    /usr/local/bin/vsrepo init --update && \
-    /usr/local/bin/vsrepo install \
+RUN git clone https://github.com/vapoursynth/vsrepo.git /tmp/vsrepo && \
+    /tmp/vsrepo/vsrepo.py init --update && \
+    /tmp/vsrepo/vsrepo.py install \
       com.dubhater.mvtools \
       com.homeofvaisynth.nnedi3cl \
       com.eleonoremizo.fmtconv \
       com.dubhater.tivtc \
-      com.wolframrhodium.bm3dcuda
+      com.wolframrhodium.bm3dcuda \
+      com.homeofvaisynth.mvsfunc && \
+    rm -rf /tmp/vsrepo
 
 # --- Python side: QTGMC script + CUDA wrappers for A/B ---
-RUN python3 -m pip install --no-cache-dir --upgrade vsutil && \
+RUN python3 -m pip install --no-cache-dir --upgrade pip setuptools wheel vsutil && \
     python3 -m pip install --no-cache-dir \
-    havsfunc \
-    vsrealesrgan vsbasicvsrpp basicsr facexlib gfpgan tqdm scipy && \
-    PYV=$(python3 -c 'import sys; print(f"{sys.version_info.major}.{sys.version_info.minor}")') && \
-    SITE="/usr/local/lib/python${PYV}/dist-packages" && \
-    curl -fsSL -o "${SITE}/mvsfunc.py" https://raw.githubusercontent.com/HomeOfVapourSynthEvolution/mvsfunc/refs/tags/r10/mvsfunc.py
+    havsfunc vsrealesrgan vsbasicvsrpp basicsr facexlib gfpgan tqdm scipy
 
 # Optional: model mount points (bind real weights at runtime)
 RUN mkdir -p /models/realesrgan /models/basicvsrpp
 ENV ESRGAN_MODEL=/models/realesrgan/RealESRGAN_x4plus_anime_6B.pth
 ENV BASICVSR_MODEL=/models/basicvsrpp/BasicVSRPP_x4_vimeo90k.pth
-
-# Quick sanity script to verify plugins are discoverable
-RUN printf '%s\n' \
-'import vapoursynth as vs, havsfunc as haf' \
-'c=vs.core' \
-'print("VS", c.version())' \
-'print("ffms2", hasattr(c,"ffms2"))' \
-'print("lsmas", hasattr(c,"lsmas"))' \
-'print("bestsource", hasattr(c,"bs"))' \
-'print("mv", hasattr(c,"mv"))' \
-'print("nnedi3cl", hasattr(c,"nnedi3cl"))' \
-'print("fmtc", hasattr(c,"fmtc"))' \
-'print("hqdn3d", hasattr(c,"hqdn3d"))' \
-'print("tivtc", hasattr(c,"tivtc"))' \
-'print("QTGMC via havsfunc", hasattr(haf,"QTGMC"))' \
-> /usr/local/bin/vs_sanity.py && chmod +x /usr/local/bin/vs_sanity.py
 
