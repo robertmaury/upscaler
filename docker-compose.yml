@@ -1,0 +1,107 @@
+version: '3.8'
+
+services:
+  # Main upscaler service
+  upscaler:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: vapoursynth:latest
+    container_name: futurama-upscaler
+    runtime: nvidia
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=all
+      - NVIDIA_DRIVER_CAPABILITIES=compute,utility,video
+      # Futurama-optimized defaults
+      - CONTENT_TYPE=animation
+      - QTGMC_PRESET=Fast
+      - UPSCALE_IMPL=esrgan
+      - DENOISE_IMPL=none
+      - IVTC=1
+      - FORCE_TFF=1
+      # Performance settings
+      - ESRGAN_TILE=256
+      - BASICVSR_TILE_W=384
+      - BASICVSR_TILE_H=384
+      # Output settings
+      - FFMPEG_VCODEC=hevc_nvenc
+      - FFMPEG_PRESET=p5
+      - FFMPEG_CQ=18
+    volumes:
+      # Mount your Futurama collection
+      - ${FUTURAMA_INPUT_DIR:-./input}:/input:ro
+      - ${FUTURAMA_OUTPUT_DIR:-./output}:/output
+      # Mount models directory
+      - ${MODELS_DIR:-./models}:/models:ro
+      # Mount for scripts and logs
+      - .:/workspace
+      - ./logs:/tmp
+    working_dir: /workspace
+    command: bash -c "echo 'Futurama upscaler ready. Use docker-compose exec upscaler bash to start processing'"
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+
+  # Quality checker service (runs alongside main processing)
+  quality-checker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: vapoursynth:latest
+    container_name: futurama-quality-checker
+    volumes:
+      - ${FUTURAMA_OUTPUT_DIR:-./output}:/output:ro
+      - ${FUTURAMA_INPUT_DIR:-./input}:/input:ro
+      - ./comparisons:/comparisons
+      - .:/workspace
+    working_dir: /workspace
+    command: bash -c "echo 'Quality checker ready. Use for post-processing validation'"
+    profiles:
+      - quality-check
+
+  # Monitoring service for long-running batch jobs
+  monitor:
+    image: alpine:latest
+    container_name: futurama-monitor
+    volumes:
+      - ${FUTURAMA_OUTPUT_DIR:-./output}:/output:ro
+      - ./logs:/logs:ro
+      - .:/workspace
+    working_dir: /workspace
+    command: |
+      sh -c "
+        echo 'Futurama processing monitor started'
+        while true; do
+          echo '=== Processing Status $(date) ==='
+          if [ -f /output/.futurama_progress.done ]; then
+            echo 'Completed files:'
+            wc -l < /output/.futurama_progress.done
+          fi
+          if [ -f /output/.futurama_progress.todo ]; then
+            echo 'Total files:'
+            wc -l < /output/.futurama_progress.todo
+          fi
+          echo 'Recent activity:'
+          find /logs -name '*.log' -mtime -1 2>/dev/null | head -5
+          echo 'Disk usage:'
+          df -h /output
+          echo '==================='
+          sleep 300
+        done
+      "
+    profiles:
+      - monitor
+
+networks:
+  default:
+    name: futurama-upscaling
+
+volumes:
+  models:
+    driver: local
+  output:
+    driver: local
