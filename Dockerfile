@@ -33,7 +33,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     checkinstall qt6-base-dev libqt6websockets6-dev libqt6core5compat6-dev \
     libboost-dev libboost-system-dev libboost-filesystem-dev \
     x11-xserver-utils libxcb-cursor0 xfe libfftw3-dev libturbojpeg big-cursor \
-    libgsl-dev
+    libgsl-dev libxxhash-dev
 
 # Upgrade pip and Install torch
 # RUN python3 -m pip install --upgrade pip && \
@@ -59,6 +59,8 @@ RUN wget https://github.com/vapoursynth/vapoursynth/archive/refs/tags/R72.tar.gz
     make install && \
     ldconfig && \
     cd .. && rm -rf vapoursynth-R72 R72.tar.gz
+# Install the Python bindings so vsrepo can find the installation
+RUN python3 -m pip install vapoursynth
 
 # Build nnedi3cl from source for Linux compatibility
 RUN git clone --depth=1 https://github.com/HomeOfVapourSynthEvolution/VapourSynth-NNEDI3CL.git /tmp/nnedi3cl && \
