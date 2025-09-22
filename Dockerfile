@@ -137,7 +137,8 @@ RUN mkdir -p /root/.config/xfe \
 # Remove Nvidia banner text wall
 RUN rm -f /opt/nvidia/entrypoint.d/*banner* /opt/nvidia/entrypoint.d/*.txt
 
-RUN add-apt-repository ppa:ubuntuhandbook1/ffmpeg8 && \
+RUN apt install -y software-properties-common && \
+    add-apt-repository ppa:ubuntuhandbook1/ffmpeg8 && \
     apt-get update && apt-get install -y ffmpeg libavcodec-dev
 
 # Add and set up the entrypoint script
