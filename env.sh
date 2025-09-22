@@ -21,9 +21,9 @@
 : "${UPSCALE_IMPL:=esrgan}"
 
 # ---- FFMPEG settings ----
-# Frame rate is now auto-detected from the source video.
-# Uncomment this line to override the detected value.
-# : "${FFMPEG_FRAMERATE:=30000/1001}"
+# Frame rate is auto-detected by default.
+# To override, set FFMPEG_FRAMERATE to your desired value (e.g., "30000/1001").
+: "${FFMPEG_FRAMERATE:=}"
 : "${FFMPEG_VCODEC:=hevc_nvenc}"
 : "${FFMPEG_PRESET:=p5}"
 : "${FFMPEG_RC:=vbr_hq}"
