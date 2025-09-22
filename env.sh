@@ -20,6 +20,15 @@
 # UPSCALE_IMPL: esrgan | basicvsr | none
 : "${UPSCALE_IMPL:=esrgan}"
 
+# ---- FFMPEG settings ----
+# Frame rate is now auto-detected from the source video.
+# Uncomment this line to override the detected value.
+# : "${FFMPEG_FRAMERATE:=30000/1001}"
+: "${FFMPEG_VCODEC:=hevc_nvenc}"
+: "${FFMPEG_PRESET:=p5}"
+: "${FFMPEG_RC:=vbr_hq}"
+: "${FFMPEG_CQ:=18}"
+
 # ---- Model locations ----
 # If true: models are already in the image at /models (no host mount)
 # If false: set MODELS_DIR (host path) to bind-mount at /models (read‑only)
@@ -67,7 +76,9 @@ export DOCKER_RUN="docker run --rm --gpus all \
   -e VAPOURSYNTH_PLUGIN_PATH=/usr/local/lib/vapoursynth:/usr/local/lib:/usr/local/lib/x86_64-linux-gnu/vapoursynth:/usr/local/lib/x86_64-linux-gnu \
   -e SOURCE_IMPL=${SOURCE_IMPL} -e IVTC=${IVTC} \
   -e DENOISE_IMPL=${DENOISE_IMPL} -e BM3D_SIGMA=${BM3D_SIGMA} -e BM3D_RADIUS=${BM3D_RADIUS} \
-  -e UPSCALE_IMPL=${UPSCALE_IMPL} \
+  -e UPSCALE_IMPL=${UPSCALE_IMPL} -e FFMPEG_FRAMERATE=${FFMPEG_FRAMERATE} \
+  -e FFMPEG_VCODEC=${FFMPEG_VCODEC} -e FFMPEG_PRESET=${FFMPEG_PRESET} \
+  -e FFMPEG_RC=${FFMPEG_RC} -e FFMPEG_CQ=${FFMPEG_CQ} \
   -e AUTO_FIND_MODELS=${AUTO_FIND_MODELS} \
   -e ESRGAN_MODEL=${ESRGAN_MODEL} -e ESRGAN_MODEL_NAME=${ESRGAN_MODEL_NAME} \
   -e BASICVSR_MODEL=${BASICVSR_MODEL} -e BASICVSR_MODEL_NAME=${BASICVSR_MODEL_NAME} \

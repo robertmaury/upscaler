@@ -20,27 +20,26 @@ ENV CUDA_PATH=/usr/local/cuda
 
 # Install runtime dependencies and vsrepo for simplified plugin management
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    git curl \
-    ocl-icd-libopencl1 ocl-icd-opencl-dev \
+    git curl ocl-icd-libopencl1 ocl-icd-opencl-dev \
     libzimg-dev libjpeg-turbo8-dev libpng-dev \
     libavcodec-dev libavformat-dev libavutil-dev libswscale-dev \
-    python3-pip python3-setuptools python3-wheel \
+    python3-pip python3-setuptools \
     && rm -rf /var/lib/apt/lists/*
 
 # Install VapourSynth plugins using vsrepo to avoid build complexities
 RUN git clone https://github.com/vapoursynth/vsrepo.git /tmp/vsrepo && \
-    python3 /tmp/vsrepo/vsrepo.py init --update && \
+    python3 /tmp/vsrepo/vsrepo.py update && \
     python3 /tmp/vsrepo/vsrepo.py install \
-      com.dubhater.mvtools \
-      com.homeofvaisynth.nnedi3cl \
-      com.eleonoremizo.fmtconv \
-      com.dubhater.tivtc \
+      com.nodame.mvtools \
+      com.holywu.nnedi3cl \
+      fmtconv \
+      com.nodame.tivtc \
       com.wolframrhodium.bm3dcuda \
-      com.homeofvaisynth.mvsfunc && \
+      mvsfunc && \
     rm -rf /tmp/vsrepo
 
 # --- Python side: QTGMC script + CUDA wrappers for A/B ---
-RUN python3 -m pip install --no-cache-dir --upgrade pip setuptools wheel vsutil && \
+RUN python3 -m pip install --no-cache-dir --upgrade pip setuptools vsutil && \
     python3 -m pip install --no-cache-dir \
     havsfunc vsrealesrgan vsbasicvsrpp basicsr facexlib gfpgan tqdm scipy
 
@@ -48,4 +47,8 @@ RUN python3 -m pip install --no-cache-dir --upgrade pip setuptools wheel vsutil 
 RUN mkdir -p /models/realesrgan /models/basicvsrpp
 ENV ESRGAN_MODEL=/models/realesrgan/RealESRGAN_x4plus_anime_6B.pth
 ENV BASICVSR_MODEL=/models/basicvsrpp/BasicVSRPP_x4_vimeo90k.pth
+
+# Add and set up the entrypoint script
+COPY entrypoint.sh /usr/local/bin/entrypoint.sh
+RUN chmod +x /usr/local/bin/entrypoint.sh
 
