@@ -44,8 +44,13 @@ FINAL_FRAMERATE="${FFMPEG_FRAMERATE:-$FRAMERATE}"
 echo "[container] Using frame rate: ${FINAL_FRAMERATE}"
 
 # Run pipeline (y4m) into ffmpeg; write to temp then move on success
-# Debugging vspipe - this will fail, but should produce a useful log
-echo "[container] Running vspipe in debug mode..." >&2
-vspipe "$VPY_SCRIPT" "$INPUT" -p >/tmp/vspipe.log 2>&1
-echo "[container] vspipe finished. Check logs/vspipe.log on the host." >&2
-exit 1 # Exit after debugging
+set -o pipefail
+vspipe -c y4m "$VPY_SCRIPT" "$INPUT" | \
+  ffmpeg -hide_banner -loglevel error -y -r "${FINAL_FRAMERATE}" -i - -i "$INPUT" \
+    -map 0:v:0 -map 1:a:0 -c:a copy \
+    -vf "scale=-1:2160:flags=lanczos,pad=3840:2160:-1:-1:color=black,format=p010le" \
+    -c:v "${FFMPEG_VCODEC:-hevc_nvenc}" -preset "${FFMPEG_PRESET:-p5}" -rc:v "${FFMPEG_RC:-vbr_hq}" -cq:v "${FFMPEG_CQ:-18}" -b:v 0 \
+    -pix_fmt p010le -profile:v main10 \
+    -color_primaries bt709 -color_trc bt709 -colorspace bt709 \
+    "$TMP_OUT" \
+  && mv -f "$TMP_OUT" "$OUTPUT"
