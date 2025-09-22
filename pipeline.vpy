@@ -9,7 +9,10 @@ if len(sys.argv) < 2:
 
 SRC = sys.argv[1]
 SOURCE_IMPL = os.environ.get("SOURCE_IMPL", "ffms2").lower()  # ffms2|lsmas|bestsource
-IVTC = int(os.environ.get("IVTC") or "1")  # 1=apply TFM/TDecimate, 0=skip
+try:
+    IVTC = int(os.environ.get("IVTC", "1"))
+except (ValueError, TypeError):
+    IVTC = 1
 DENOISE_IMPL = os.environ.get("DENOISE_IMPL", "none").lower()
 UPSCALE_IMPL = os.environ.get("UPSCALE_IMPL", "esrgan").lower()
 
@@ -66,7 +69,10 @@ if DENOISE_IMPL == "bm3d":
         sigma = float(os.environ.get("BM3D_SIGMA", "2.5"))
     except (ValueError, TypeError):
         sigma = 2.5
-    radius = int(float(os.environ.get("BM3D_RADIUS", "1")))
+    try:
+        radius = int(float(os.environ.get("BM3D_RADIUS", "1")))
+    except (ValueError, TypeError):
+        radius = 1
     tmp = core.bm3dcuda.VBasic(clean, sigma=sigma, radius=radius)
     clean = core.bm3dcuda.VFinal(clean, ref=tmp, sigma=sigma, radius=radius)
 
