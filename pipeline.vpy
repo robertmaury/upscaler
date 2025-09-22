@@ -45,7 +45,7 @@ src = load_source(SRC)
 # TFF is typical for NTSC DVDs; flip to False if needed
 deint = haf.QTGMC(
     src, Preset="Slow", TFF=True,
-    EdiMode="NNEDI3CL", EdiThreads=2, TR2=1, EZKeepGrain=0.20
+    EdiMode="NNEDI3CL", EdiThreads=1, TR2=1, EZKeepGrain=0.20
 )
 
 prog = deint
@@ -88,7 +88,7 @@ elif UPSCALE_IMPL == "none":
 else:
     from vsrealesrgan import RealESRGAN
     model = os.environ.get("ESRGAN_MODEL", "/models/realesrgan/RealESRGAN_x4plus_anime_6B.pth")
-    up = RealESRGAN(device_id=0, model_path=model, scale=4, tile=0, tile_pad=16, pre_pad=0, half=True)(rgb)
+    up = RealESRGAN(device_id=0, model_path=model, scale=4, tile=256, tile_pad=16, pre_pad=0, half=True)(rgb)
 
 # ---------- Output ----------
 out = core.resize.Spline36(up, format=vs.YUV420P10, matrix_in_s="709", matrix_s="709", range_s="limited")
