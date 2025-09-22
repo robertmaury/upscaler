@@ -51,8 +51,9 @@ RUN BUILD_DEPS="git build-essential meson ninja-build cmake pkg-config python3-d
     # TIVTC (fieldmatch/decimate for IVTC inside VS)
     git clone --depth=1 https://github.com/dubhater/vapoursynth-tivtc.git /tmp/vs_tivtc && \
     cd /tmp/vs_tivtc && \
-    meson setup build --buildtype=release --prefix=/usr/local --libdir="${VS_PLUGIN_DIR}" && \
-    ninja -C build && ninja -C build install && \
+    ./autogen.sh && \
+    ./configure --prefix=/usr/local --libdir="${VS_PLUGIN_DIR}" && \
+    make -j"$(nproc)" && make install && \
     \
     # ---- BM3D-CUDA (VapourSynth-BM3DCUDA) ----
     mkdir -p /tmp/bm3d && \

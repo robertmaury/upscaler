@@ -48,30 +48,11 @@ deint = haf.QTGMC(
 prog = deint
 
 # ---------- Try to auto‑load TIVTC if missing ----------
-if IVTC and not hasattr(core, "tivtc"):
-    # common install locations seen in multi‑arch images
-    candidates = [
-        "/usr/local/lib/vapoursynth/libtivtc.so",
-        "/usr/local/lib/x86_64-linux-gnu/vapoursynth/libtivtc.so",
-        "/usr/local/lib/x86_64-linux-gnu/libtivtc.so",
-        "/usr/lib/x86_64-linux-gnu/vapoursynth/libtivtc.so",
-    ]
-    for pattern in candidates:
-        for p in glob.glob(pattern):
-            try:
-                core.std.LoadPlugin(p)
-                break
-            except Exception:
-                pass
-        if hasattr(core, "tivtc"):
-            break
-
 # ---------- IVTC (soft‑fallback) ----------
 if IVTC:
     if not hasattr(core, "tivtc"):
         import sys as _sys
-        _sys.stderr.write("[pipeline] Warning: IVTC requested but core.tivtc missing; skipping IVTC.
-")
+        _sys.stderr.write("[pipeline] Warning: IVTC requested but core.tivtc missing; skipping IVTC.\n")
     else:
         prog = core.tivtc.TFM(prog)
         prog = core.tivtc.TDecimate(prog)
