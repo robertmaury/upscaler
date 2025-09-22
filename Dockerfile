@@ -98,9 +98,15 @@ RUN python3 -m pip install --no-cache-dir --upgrade setuptools vsutil && \
     python3 -m pip install --no-cache-dir \
     havsfunc vsrealesrgan vsbasicvsrpp basicsr facexlib gfpgan tqdm scipy
 
+# Setup Qt6
+ENV PATH="/usr/lib/qt6/bin:$PATH" \
+    XDG_RUNTIME_DIR=/tmp/runtime-root
+
 # Install vsedit
 RUN git clone https://github.com/YomikoR/VapourSynth-Editor && \
     cd VapourSynth-Editor/pro && \
+    apt-get install -y --no-install-recommends \
+    qt6-base-dev qt6-base-dev-tools qmake6 && \
     qmake pro.pro && \
     make && \
     mv ../build/release-64bit-gcc/vsedit /usr/local/bin/ && \
@@ -117,10 +123,6 @@ RUN apt-get purge -y --auto-remove \
 RUN mkdir -p /models/realesrgan /models/basicvsrpp
 ENV ESRGAN_MODEL=/models/realesrgan/RealESRGAN_x4plus_anime_6B.pth
 ENV BASICVSR_MODEL=/models/basicvsrpp/BasicVSRPP_x4_vimeo90k.pth
-
-# Setup Qt6
-ENV PATH="/usr/lib/qt6/bin:$PATH" \
-    XDG_RUNTIME_DIR=/tmp/runtime-root
 
 # Install vulkan with mesa dzn drivers
 RUN apt-get install -y --no-install-recommends \
