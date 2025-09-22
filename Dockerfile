@@ -124,31 +124,6 @@ RUN mkdir -p /models/realesrgan /models/basicvsrpp
 ENV ESRGAN_MODEL=/models/realesrgan/RealESRGAN_x4plus_anime_6B.pth
 ENV BASICVSR_MODEL=/models/basicvsrpp/BasicVSRPP_x4_vimeo90k.pth
 
-# Install vulkan with mesa dzn drivers
-RUN apt-get install -y --no-install-recommends \
-    libplacebo-dev libvulkan1 vulkan-tools ca-certificates python3-mako python3-yaml \
-    libdrm-dev libexpat1-dev spirv-tools spirv-headers glslang-tools \
-    llvm-18-dev libclang-cpp18-dev libclc-18-dev libllvmspirvlib-18-dev directx-headers-dev
-RUN git clone https://gitlab.freedesktop.org/mesa/mesa.git /mesa \
- && meson setup /mesa/build /mesa \
-    -Dvulkan-drivers=microsoft-experimental \
-    -Dgallium-drivers= \
-    -Dopengl=false \
-    -Dgles1=disabled \
-    -Dgles2=disabled \
-    -Dglx=disabled \
-    -Degl=disabled \
-    -Dgbm=disabled \
-    -Dplatforms= \
-    -Dvideo-codecs= \
-    -Dbuildtype=release \
- && meson compile -C /mesa/build \
- && meson install -C /mesa/build \
- && rm -rf /mesa
-ENV VK_ICD_FILENAMES=/usr/local/share/vulkan/icd.d/dzn_icd.x86_64.json
-ENV LD_LIBRARY_PATH="/usr/lib/wsl/lib:${LD_LIBRARY_PATH}"
-ENV MESA_VK_IGNORE_CONFORMANCE_WARNING=1
-
 # Clean up unnecessary files
 RUN apt-get autoclean -y && apt-get autoremove -y && apt-get clean -y && \
     python -m pip cache purge
