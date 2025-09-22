@@ -71,6 +71,7 @@ fi
 
 # Final docker run prefix (exports all toggles and paths)
 export DOCKER_RUN="docker run --rm --gpus all \
+  -v $PWD/logs:/tmp \
   -v $PWD:$PWD -w $PWD \
   ${MODEL_MOUNT_OPTS} ${EXTRA_MOUNTS} \
   -e VAPOURSYNTH_PLUGIN_PATH=/usr/local/lib/vapoursynth:/usr/local/lib:/usr/local/lib/x86_64-linux-gnu/vapoursynth:/usr/local/lib/x86_64-linux-gnu \
