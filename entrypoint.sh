@@ -45,8 +45,7 @@ echo "[container] Using frame rate: ${FINAL_FRAMERATE}"
 
 # Run pipeline (y4m) into ffmpeg; write to temp then move on success
 set -o pipefail
-vspipe --info "$VPY_SCRIPT" "$INPUT" - |& tee /tmp/vspipe.log
-vspipe -c y4m "$VPY_SCRIPT" "$INPUT" 2> /tmp/vspipe.log | \
+vspipe -c y4m "$VPY_SCRIPT" "$INPUT" 2>/tmp/vspipe.log | \
   ffmpeg -hide_banner -loglevel error -y -r "${FINAL_FRAMERATE}" -i - -i "$INPUT" \
     -map 0:v:0 -map 1:a:0 -c:a copy \
     -vf "scale=-1:2160:flags=lanczos,pad=3840:2160:-1:-1:color=black,format=p010le" \
