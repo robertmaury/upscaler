@@ -1,5 +1,6 @@
 # Base image from NVIDIA
-FROM nvcr.io/nvidia/tensorrt:25.08-py3
+#FROM nvcr.io/nvidia/tensorrt:25.08-py3
+FROM nvcr.io/nvidia/pytorch:25.08-py3
 ARG DEBIAN_FRONTEND=noninteractive
 
 # Set consistent plugin path for all builds
@@ -35,8 +36,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libgsl-dev
 
 # Upgrade pip and Install torch
-RUN python3 -m pip install --upgrade pip && \
-    python3 -m pip install --no-cache-dir --pre torch torchvision torchaudio --index-url https://download.pytorch.org/whl/nightly/cu130
+# RUN python3 -m pip install --upgrade pip && \
+#     python3 -m pip install --no-cache-dir --pre torch torchvision torchaudio --index-url https://download.pytorch.org/whl/nightly/cu130
 
 # Install Python packages
 RUN python -m pip install Cython meson ninja setuptools wheel \
