@@ -46,6 +46,6 @@ echo "[container] Using frame rate: ${FINAL_FRAMERATE}"
 # Run pipeline (y4m) into ffmpeg; write to temp then move on success
 # Debugging vspipe - this will fail, but should produce a useful log
 echo "[container] Running vspipe in debug mode..." >&2
-vspipe "$VPY_SCRIPT" "$INPUT" -p . >/dev/null 2>/tmp/vspipe.log
+vspipe "$VPY_SCRIPT" "$INPUT" -p >/tmp/vspipe.log 2>&1
 echo "[container] vspipe finished. Check logs/vspipe.log on the host." >&2
 exit 1 # Exit after debugging
