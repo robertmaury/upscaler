@@ -12,6 +12,12 @@ if [ ! -r "$INPUT" ]; then
   exit 10
 fi
 
+# Preflight: output must not equal input
+if [ "$INPUT" = "$OUTPUT" ]; then
+  echo "[container] ERROR: input and output files are the same; refusing to overwrite." >&2
+  exit 11
+fi
+
 # Preflight: print VS plugin presence (non-fatal)
 python3 -c '
 import vapoursynth as vs
