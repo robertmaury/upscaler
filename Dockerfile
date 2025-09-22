@@ -29,8 +29,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 # Install VapourSynth plugins using vsrepo to avoid build complexities
 RUN git clone https://github.com/vapoursynth/vsrepo.git /tmp/vsrepo && \
-    /tmp/vsrepo/vsrepo.py init --update && \
-    /tmp/vsrepo/vsrepo.py install \
+    python3 /tmp/vsrepo/vsrepo.py init --update && \
+    python3 /tmp/vsrepo/vsrepo.py install \
       com.dubhater.mvtools \
       com.homeofvaisynth.nnedi3cl \
       com.eleonoremizo.fmtconv \
