@@ -9,7 +9,7 @@ if len(sys.argv) < 2:
 
 SRC = sys.argv[1]
 SOURCE_IMPL = os.environ.get("SOURCE_IMPL", "ffms2").lower()  # ffms2|lsmas|bestsource
-IVTC = int(os.environ.get("IVTC", "1"))  # 1=apply TFM/TDecimate, 0=skip
+IVTC = int(os.environ.get("IVTC") or "1")  # 1=apply TFM/TDecimate, 0=skip
 DENOISE_IMPL = os.environ.get("DENOISE_IMPL", "none").lower()
 UPSCALE_IMPL = os.environ.get("UPSCALE_IMPL", "esrgan").lower()
 
@@ -62,8 +62,8 @@ clean = prog
 if DENOISE_IMPL == "bm3d":
     if not hasattr(core, "bm3dcuda"):
         raise RuntimeError("DENOISE_IMPL=bm3d but bm3dcuda plugin is missing")
-    sigma = float(os.environ.get("BM3D_SIGMA", "2.5"))
-    radius = int(os.environ.get("BM3D_RADIUS", "1"))
+    sigma = float(os.environ.get("BM3D_SIGMA") or "2.5")
+    radius = int(os.environ.get("BM3D_RADIUS") or "1")
     tmp = core.bm3dcuda.VBasic(clean, sigma=sigma, radius=radius)
     clean = core.bm3dcuda.VFinal(clean, ref=tmp, sigma=sigma, radius=radius)
 

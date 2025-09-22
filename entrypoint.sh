@@ -31,7 +31,7 @@ if [ "${AUTO_FIND_MODELS:-false}" = "true" ]; then
 fi
 
 # Detect frame rate from source video
-FRAMERATE=$(ffprobe -v error -select_streams v:0 -show_entries stream=r_frame_rate -of default=noprint_wrappers=1:nokey=1 "$INPUT")
+FRAMERATE=$((ffprobe -v error -select_streams v:0 -show_entries stream=r_frame_rate -of default=noprint_wrappers=1:nokey=1 "$INPUT") 2>/dev/null || echo "24000/1001")
 
 # Use detected frame rate, but allow override via environment variable
 FINAL_FRAMERATE="${FFMPEG_FRAMERATE:-$FRAMERATE}"

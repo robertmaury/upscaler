@@ -36,9 +36,9 @@ RUN git clone --depth=1 https://github.com/HomeOfVapourSynthEvolution/VapourSynt
 
 # Install other plugins using vsrepo
 RUN git clone https://github.com/vapoursynth/vsrepo.git /tmp/vsrepo && \
-    python3 /tmp/vsrepo/vsrepo.py init --update && \
+    python3 /tmp/vsrepo/vsrepo.py update && \
     python3 /tmp/vsrepo/vsrepo.py install \
-      com.dubhater.mvtools \
+      com.nodame.mvtools \
       fmtconv \
       com.nodame.tivtc \
       com.wolframrhodium.bm3dcuda \
