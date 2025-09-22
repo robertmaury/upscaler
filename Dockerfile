@@ -3,6 +3,7 @@
 # ---------------------------------------------
 FROM pifroggi/vapoursynth:2025_09_05
 
+
 LABEL maintainer="Robert Maury <daquinox@gmail.com>"
 LABEL description="VapourSynth container with plugins for deinterlacing and upscaling."
 
