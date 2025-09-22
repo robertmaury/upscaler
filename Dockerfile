@@ -108,18 +108,6 @@ RUN mkdir -p /models/realesrgan /models/basicvsrpp
 ENV ESRGAN_MODEL=/models/realesrgan/RealESRGAN_x4plus_anime_6B.pth
 ENV BASICVSR_MODEL=/models/basicvsrpp/BasicVSRPP_x4_vimeo90k.pth
 
-# Install vs-mlrt
-RUN git clone --depth 1 https://github.com/AmusementClub/vs-mlrt && \
-    cd vs-mlrt/vstrt && mkdir build && cd build && \
-    CXXFLAGS="-I/usr/local/include/vapoursynth" \
-    cmake .. \
-        -DCMAKE_BUILD_TYPE=Release \
-        -DVAPOURSYNTH_INCLUDE_DIRECTORY=/usr/local/include \
-        -DCMAKE_INSTALL_PREFIX=/usr/local \
-        -DCMAKE_INSTALL_LIBDIR=/usr/local/lib/vapoursynth && \
-    make -j$(nproc) && make install && \
-    cd ../../../ && rm -rf vs-mlrt
-
 # Setup Qt6
 ENV PATH="/usr/lib/qt6/bin:$PATH" \
     XDG_RUNTIME_DIR=/tmp/runtime-root
