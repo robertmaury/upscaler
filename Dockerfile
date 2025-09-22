@@ -18,20 +18,27 @@ ENV CUDA_HOME=/usr/local/cuda
 ENV LD_LIBRARY_PATH=/usr/local/cuda/lib64:/usr/local/cuda/lib:/usr/local/lib:${LD_LIBRARY_PATH}
 ENV CUDA_PATH=/usr/local/cuda
 
-# Install runtime dependencies and vsrepo for simplified plugin management
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    git curl ocl-icd-libopencl1 ocl-icd-opencl-dev \
+# Install build and runtime dependencies
+RUN BUILD_DEPS="git build-essential meson ninja-build pkg-config python3-dev cython3" && \
+    apt-get update && apt-get install -y --no-install-recommends \
+    $BUILD_DEPS \
+    curl ocl-icd-libopencl1 ocl-icd-opencl-dev \
     libzimg-dev libjpeg-turbo8-dev libpng-dev \
     libavcodec-dev libavformat-dev libavutil-dev libswscale-dev \
-    python3-pip python3-setuptools \
-    && rm -rf /var/lib/apt/lists/*
+    python3-pip python3-setuptools
 
-# Install VapourSynth plugins using vsrepo to avoid build complexities
+# Build nnedi3cl from source for Linux compatibility
+RUN git clone --depth=1 https://github.com/HomeOfVapourSynthEvolution/VapourSynth-NNEDI3CL.git /tmp/nnedi3cl && \
+    cd /tmp/nnedi3cl && \
+    meson setup build --buildtype=release --prefix=/usr/local --libdir="${VS_PLUGIN_DIR}" && \
+    ninja -C build && ninja -C build install && \
+    rm -rf /tmp/nnedi3cl
+
+# Install other plugins using vsrepo
 RUN git clone https://github.com/vapoursynth/vsrepo.git /tmp/vsrepo && \
-    python3 /tmp/vsrepo/vsrepo.py update && \
+    python3 /tmp/vsrepo/vsrepo.py init --update && \
     python3 /tmp/vsrepo/vsrepo.py install \
-      com.nodame.mvtools \
-      com.holywu.nnedi3cl \
+      com.dubhater.mvtools \
       fmtconv \
       com.nodame.tivtc \
       com.wolframrhodium.bm3dcuda \
@@ -42,6 +49,13 @@ RUN git clone https://github.com/vapoursynth/vsrepo.git /tmp/vsrepo && \
 RUN python3 -m pip install --no-cache-dir --upgrade pip setuptools vsutil && \
     python3 -m pip install --no-cache-dir \
     havsfunc vsrealesrgan vsbasicvsrpp basicsr facexlib gfpgan tqdm scipy
+
+# --- Cleanup ---
+RUN apt-get purge -y --auto-remove \
+      git build-essential meson ninja-build pkg-config python3-dev cython3 && \
+    apt-get autoremove -y && \
+    rm -rf /var/lib/apt/lists/* && \
+    ldconfig
 
 # Optional: model mount points (bind real weights at runtime)
 RUN mkdir -p /models/realesrgan /models/basicvsrpp
