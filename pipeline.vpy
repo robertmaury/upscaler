@@ -63,7 +63,7 @@ if DENOISE_IMPL == "bm3d":
     if not hasattr(core, "bm3dcuda"):
         raise RuntimeError("DENOISE_IMPL=bm3d but bm3dcuda plugin is missing")
     sigma = float(os.environ.get("BM3D_SIGMA") or "2.5")
-    radius = int(os.environ.get("BM3D_RADIUS") or "1")
+    radius = int(float(os.environ.get("BM3D_RADIUS", "1")))
     tmp = core.bm3dcuda.VBasic(clean, sigma=sigma, radius=radius)
     clean = core.bm3dcuda.VFinal(clean, ref=tmp, sigma=sigma, radius=radius)
 
