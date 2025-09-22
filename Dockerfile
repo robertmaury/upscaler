@@ -3,7 +3,7 @@
 # ---------------------------------------------
 FROM pifroggi/vapoursynth:2025_09_05
 
-LABEL maintainer="Your Name <you@example.com>"
+LABEL maintainer="Robert Maury <daquinox@gmail.com>"
 LABEL description="VapourSynth container with plugins for deinterlacing and upscaling."
 
 ARG DEBIAN_FRONTEND=noninteractive
@@ -55,9 +55,8 @@ RUN git clone --depth=1 https://gitlab.com/EleonoreMizo/fmtconv.git /tmp/fmtconv
 # TIVTC
 RUN git clone --depth=1 https://github.com/dubhater/vapoursynth-tivtc.git /tmp/vs_tivtc && \
     cd /tmp/vs_tivtc && \
-    ./autogen.sh && \
-    ./configure --prefix=/usr/local --libdir="${VS_PLUGIN_DIR}" && \
-    make -j"$(nproc)" && make install && \
+    meson setup build --buildtype=release --prefix=/usr/local --libdir="${VS_PLUGIN_DIR}" && \
+    ninja -C build && ninja -C build install && \
     rm -rf /tmp/vs_tivtc
 
 # BM3D-CUDA
