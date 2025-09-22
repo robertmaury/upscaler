@@ -40,4 +40,4 @@ if [[ "${DEBUG:-0}" == "1" ]]; then
 fi
 
 # Execute
-$DOCKER_RUN $DOCKER_CMD
+$DOCKER_RUN bash -c "$DOCKER_CMD"
