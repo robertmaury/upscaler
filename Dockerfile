@@ -60,7 +60,7 @@ RUN wget https://github.com/vapoursynth/vapoursynth/archive/refs/tags/R72.tar.gz
     ldconfig && \
     cd .. && rm -rf vapoursynth-R72 R72.tar.gz
 # Install the Python bindings so vsrepo can find the installation
-RUN python3 -m pip install vapoursynth
+RUN python3 -m pip install --use-pep517 vapoursynth
 
 # Build nnedi3cl from source for Linux compatibility
 RUN git clone --depth=1 https://github.com/HomeOfVapourSynthEvolution/VapourSynth-NNEDI3CL.git /tmp/nnedi3cl && \
@@ -98,6 +98,14 @@ RUN python3 -m pip install --no-cache-dir --upgrade setuptools vsutil && \
     python3 -m pip install --no-cache-dir \
     havsfunc vsrealesrgan vsbasicvsrpp basicsr facexlib gfpgan tqdm scipy
 
+# Install vsedit
+RUN git clone https://github.com/YomikoR/VapourSynth-Editor && \
+    cd VapourSynth-Editor/pro && \
+    qmake pro.pro && \
+    make && \
+    mv ../build/release-64bit-gcc/vsedit /usr/local/bin/ && \
+    cd ../.. && rm -rf VapourSynth-Editor
+
 # --- Cleanup ---
 RUN apt-get purge -y --auto-remove \
       git build-essential meson ninja-build pkg-config python3-dev cython3 && \
@@ -113,14 +121,6 @@ ENV BASICVSR_MODEL=/models/basicvsrpp/BasicVSRPP_x4_vimeo90k.pth
 # Setup Qt6
 ENV PATH="/usr/lib/qt6/bin:$PATH" \
     XDG_RUNTIME_DIR=/tmp/runtime-root
-
-# Install vsedit
-RUN git clone https://github.com/YomikoR/VapourSynth-Editor && \
-    cd VapourSynth-Editor/pro && \
-    qmake pro.pro && \
-    make && \
-    mv ../build/release-64bit-gcc/vsedit /usr/local/bin/ && \
-    cd ../.. && rm -rf VapourSynth-Editor
 
 # Install vulkan with mesa dzn drivers
 RUN apt-get install -y --no-install-recommends \
