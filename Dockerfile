@@ -76,15 +76,6 @@ RUN mkdir -p /tmp/bm3d && \
     cmake --install /tmp/bm3d/build && \
     rm -rf /tmp/bm3d
 
-# --- Cleanup ---
-# This layer can be commented out during debugging to inspect the build environment
-RUN apt-get purge -y --auto-remove \
-      git build-essential meson ninja-build cmake pkg-config python3-dev cython3 \
-      autoconf automake libtool ca-certificates curl gnupg wget && \
-    apt-get autoremove -y && \
-    rm -rf /var/lib/apt/lists/* && \
-    ldconfig
-
 # --- Python side: QTGMC script + CUDA wrappers for A/B ---
 RUN python -m pip install --no-cache-dir --upgrade pip setuptools wheel vsutil && \
     python -m pip install --no-cache-dir \
@@ -93,6 +84,15 @@ RUN python -m pip install --no-cache-dir --upgrade pip setuptools wheel vsutil &
     PYV=$(python -c 'import sys; print(f"{sys.version_info.major}.{sys.version_info.minor}")') && \
     SITE="/usr/local/lib/python${PYV}/dist-packages" && \
     curl -fsSL -o "${SITE}/mvsfunc.py" https://raw.githubusercontent.com/HomeOfVapourSynthEvolution/mvsfunc/refs/tags/r10/mvsfunc.py
+
+# --- Cleanup ---
+# This layer can be commented out during debugging to inspect the build environment
+RUN apt-get purge -y --auto-remove \
+      git build-essential meson ninja-build cmake pkg-config python3-dev cython3 \
+      autoconf automake libtool ca-certificates curl gnupg wget && \
+    apt-get autoremove -y && \
+    rm -rf /var/lib/apt/lists/* && \
+    ldconfig
 
 # Optional: model mount points (bind real weights at runtime)
 RUN mkdir -p /models/realesrgan /models/basicvsrpp
