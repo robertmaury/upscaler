@@ -18,84 +18,33 @@ ENV CUDA_HOME=/usr/local/cuda
 ENV LD_LIBRARY_PATH=/usr/local/cuda/lib64:/usr/local/cuda/lib:/usr/local/lib:${LD_LIBRARY_PATH}
 ENV CUDA_PATH=/usr/local/cuda
 
-# Install build dependencies, then compile plugins in separate layers for caching and debugging
+# Install runtime dependencies and vsrepo for simplified plugin management
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    git build-essential meson ninja-build cmake pkg-config python3-dev cython3 \
-    autoconf automake libtool ca-certificates curl gnupg wget \
+    curl \
     ocl-icd-libopencl1 ocl-icd-opencl-dev \
     libzimg-dev libjpeg-turbo8-dev libpng-dev \
-    libavcodec-dev libavformat-dev libavutil-dev libswscale-dev
+    libavcodec-dev libavformat-dev libavutil-dev libswscale-dev \
+    python3-pip python3-setuptools python3-wheel \
+    && rm -rf /var/lib/apt/lists/*
 
-# --- Build Core VapourSynth Plugins ---
-# Each plugin is built in its own layer to isolate errors and leverage caching.
-# All plugins will be installed to ${VS_PLUGIN_DIR}
-
-# mvtools
-RUN git clone --depth=1 https://github.com/dubhater/vapoursynth-mvtools.git /tmp/mvtools && \
-    cd /tmp/mvtools && \
-    meson setup build --buildtype=release --prefix=/usr/local --libdir="${VS_PLUGIN_DIR}" && \
-    ninja -C build && ninja -C build install && \
-    rm -rf /tmp/mvtools
-
-# nnedi3cl
-RUN git clone --depth=1 https://github.com/HomeOfVapourSynthEvolution/VapourSynth-NNEDI3CL.git /tmp/nnedi3cl && \
-    cd /tmp/nnedi3cl && \
-    meson setup build --buildtype=release --prefix=/usr/local --libdir="${VS_PLUGIN_DIR}" && \
-    ninja -C build && ninja -C build install && \
-    rm -rf /tmp/nnedi3cl
-
-# fmtconv
-RUN git clone --depth=1 https://gitlab.com/EleonoreMizo/fmtconv.git /tmp/fmtconv && \
-    cd /tmp/fmtconv/build/unix && \
-    ./autogen.sh && \
-    ./configure --prefix=/usr/local --libdir="${VS_PLUGIN_DIR}" && \
-    make -j"$(nproc)" && make install && \
-    rm -rf /tmp/fmtconv
-
-# TIVTC
-RUN git clone --depth=1 https://github.com/dubhater/vapoursynth-tivtc.git /tmp/vs_tivtc && \
-    echo "--- Contents of /tmp/vs_tivtc ---" && \
-    ls -la /tmp/vs_tivtc && \
-    echo "---------------------------------" && \
-    cd /tmp/vs_tivtc && \
-    meson setup build --buildtype=release --prefix=/usr/local --libdir="${VS_PLUGIN_DIR}" && \
-    ninja -C build && ninja -C build install && \
-    rm -rf /tmp/vs_tivtc
-
-# BM3D-CUDA
-RUN mkdir -p /tmp/bm3d && \
-    curl -L https://github.com/WolframRhodium/VapourSynth-BM3DCUDA/archive/refs/tags/R2.15.tar.gz \
-      | tar -xz -C /tmp/bm3d --strip-components=1 && \
-    find /tmp/bm3d -name CMakeLists.txt -exec \
-      sed -i 's/CUDA::nvrtc_static/CUDA::nvrtc/g; s/CUDA::nvrtc-builtins_static/CUDA::nvrtc-builtins/g; s/nvrtc_static/nvrtc/g; s/nvrtc-builtins_static/nvrtc-builtins/g' {} + && \
-    cmake -S /tmp/bm3d -B /tmp/bm3d/build -G Ninja \
-      -DCMAKE_BUILD_TYPE=Release \
-      -DCMAKE_INSTALL_PREFIX=/usr/local \
-      -DCMAKE_INSTALL_LIBDIR="${VS_PLUGIN_DIR}" \
-      -DVAPOURSYNTH_INCLUDE_DIRECTORY=/usr/local/include/vapoursynth \
-      -DCMAKE_CUDA_ARCHITECTURES="86" \
-      -DCMAKE_CUDA_FLAGS="--use_fast_math" && \
-    cmake --build /tmp/bm3d/build -j"$(nproc)" && \
-    cmake --install /tmp/bm3d/build && \
-    rm -rf /tmp/bm3d
+# Install VapourSynth plugins using vsrepo to avoid build complexities
+RUN python3 -m pip install --no-cache-dir vsrepo && \
+    /usr/local/bin/vsrepo init --update && \
+    /usr/local/bin/vsrepo install \
+      com.dubhater.mvtools \
+      com.homeofvaisynth.nnedi3cl \
+      com.eleonoremizo.fmtconv \
+      com.dubhater.tivtc \
+      com.wolframrhodium.bm3dcuda
 
 # --- Python side: QTGMC script + CUDA wrappers for A/B ---
-RUN python -m pip install --no-cache-dir --upgrade pip setuptools wheel vsutil && \
-    python -m pip install --no-cache-dir \
+RUN python3 -m pip install --no-cache-dir --upgrade vsutil && \
+    python3 -m pip install --no-cache-dir \
     havsfunc \
     vsrealesrgan vsbasicvsrpp basicsr facexlib gfpgan tqdm scipy && \
-    PYV=$(python -c 'import sys; print(f"{sys.version_info.major}.{sys.version_info.minor}")') && \
+    PYV=$(python3 -c 'import sys; print(f"{sys.version_info.major}.{sys.version_info.minor}")') && \
     SITE="/usr/local/lib/python${PYV}/dist-packages" && \
     curl -fsSL -o "${SITE}/mvsfunc.py" https://raw.githubusercontent.com/HomeOfVapourSynthEvolution/mvsfunc/refs/tags/r10/mvsfunc.py
-
-# --- Cleanup ---
-# This layer can be commented out during debugging to inspect the build environment
-RUN apt-get purge -y --auto-remove \
-      git build-essential meson ninja-build cmake pkg-config python3-dev cython3 \
-      autoconf automake libtool ca-certificates curl gnupg wget && \
-    apt-get autoremove -y && \
-    rm -rf /var/lib/apt/lists/* && \
-    ldconfig
 
 # Optional: model mount points (bind real weights at runtime)
 RUN mkdir -p /models/realesrgan /models/basicvsrpp
