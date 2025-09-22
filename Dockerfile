@@ -23,7 +23,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     # Python
     python3-pip python3-setuptools \
     # General utilities
-    p7zip-full x264 autoconf libtool yasm nasm clang ffmsindex libffms2-dev wget \
+    p7zip-full x264 autoconf automake libtool yasm nasm clang ffmsindex libffms2-dev wget \
     # Compression and development libraries
     libssl-dev zlib1g-dev libbz2-dev libreadline-dev libncursesw5-dev \
     xz-utils tk-dev libxml2-dev libxmlsec1-dev libffi-dev liblzma-dev \
