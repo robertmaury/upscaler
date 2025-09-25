@@ -68,13 +68,13 @@ RUN python3 -m pip install --use-pep517 vapoursynth
 
 # Build nnedi3cl from source for Linux compatibility
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    git build-essential meson ninja-build \
+    git build-essential meson ninja-build opencl-headers ocl-icd-opencl-dev \
     && git clone --depth=1 https://github.com/HomeOfVapourSynthEvolution/VapourSynth-NNEDI3CL.git /tmp/nnedi3cl \
     && cd /tmp/nnedi3cl \
     && meson setup build --buildtype=release --prefix=/usr/local --libdir="${VS_PLUGIN_DIR}" \
     && ninja -C build && ninja -C build install \
     && cd / && rm -rf /tmp/nnedi3cl \
-    && apt-get purge -y --auto-remove git build-essential meson ninja-build \
+    && apt-get purge -y --auto-remove git build-essential meson ninja-build opencl-headers ocl-icd-opencl-dev \
     && rm -rf /var/lib/apt/lists/*
 
 # Build L-SMASH library with proper dependencies
