@@ -63,8 +63,8 @@ fi
 # Get input file info for logging
 if command -v ffprobe >/dev/null 2>&1; then
     INPUT_SIZE=$(du -h "$INPUT" 2>/dev/null | cut -f1 || echo "unknown")
-    INPUT_DURATION=$(ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 "$INPUT" 2>/dev/null | cut -d. -f1 || echo "unknown")
-    INPUT_RESOLUTION=$(ffprobe -v error -select_streams v:0 -show_entries stream=width,height -of csv=s=x:p=0 "$INPUT" 2>/dev/null || echo "unknown")
+    INPUT_DURATION=$(ffprobe -v error -show_entries format=duration -of "default=noprint_wrappers=1:nokey=1" "$INPUT" 2>/dev/null | cut -d. -f1 || echo "unknown")
+    INPUT_RESOLUTION=$(ffprobe -v error -select_streams v:0 -show_entries stream=width,height -of "csv=s=x:p=0" "$INPUT" 2>/dev/null || echo "unknown")
 
     log "INFO" "Input properties: ${INPUT_RESOLUTION}, ${INPUT_DURATION}s, ${INPUT_SIZE}"
 else
