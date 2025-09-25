@@ -144,14 +144,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 COPY vsrealcugan.py /usr/local/lib/python3/dist-packages/
 RUN PYTHON_SITE_PACKAGES=$(python3 -c "import site; print(site.getsitepackages()[0])") && \
     cp /usr/local/lib/python3/dist-packages/vsrealcugan.py "$PYTHON_SITE_PACKAGES/" && \
-    python3 -c "\
-import sys; \
-try: \
-    import vsrealcugan; \
-    print('Real-CUGAN VapourSynth wrapper installed successfully'); \
-except Exception as e: \
-    print(f'Real-CUGAN wrapper installation check failed: {e}'); \
-"
+    python3 -c "import sys; import vsrealcugan; print('Real-CUGAN VapourSynth wrapper installed successfully')" || echo "Real-CUGAN wrapper installation check failed"
 
 # Create models directory structure for Real-CUGAN
 RUN mkdir -p /models/realcugan
