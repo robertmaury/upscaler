@@ -104,7 +104,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 # Install other plugins using vsrepo
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    git \
+    git p7zip-full \
     && git clone https://github.com/vapoursynth/vsrepo.git /tmp/vsrepo \
     && python3 /tmp/vsrepo/vsrepo.py update \
     && python3 /tmp/vsrepo/vsrepo.py install \
@@ -118,7 +118,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
       mvsfunc \
     && python3 -c "import vapoursynth as vs; c=vs.core; print('BestSource available:', hasattr(c, 'bs'))" \
     && rm -rf /tmp/vsrepo \
-    && apt-get purge -y --auto-remove git \
+    && apt-get purge -y --auto-remove git p7zip-full \
     && rm -rf /var/lib/apt/lists/*
 
 # --- Python side: QTGMC script + CUDA wrappers for A/B ---
