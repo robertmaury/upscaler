@@ -46,7 +46,7 @@ RUN python -m pip -v install --no-cache-dir --force-reinstall --no-binary mmcv "
 # Install VapourSynth R72 with its build dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
     # Build tools for VapourSynth
-    git build-essential autoconf automake libtool pkg-config python3-dev \
+    git build-essential autoconf automake libtool pkg-config python3-dev cython3 yasm nasm \
     # VapourSynth dependencies
     libzimg-dev libjpeg-turbo8-dev libpng-dev \
     libavcodec-dev libavformat-dev libavutil-dev libswscale-dev \
@@ -61,7 +61,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && ldconfig \
     && cd .. && rm -rf vapoursynth-R72 R72.tar.gz \
     # Clean up VapourSynth build dependencies but keep runtime libs
-    && apt-get purge -y --auto-remove git build-essential autoconf automake libtool \
+    && apt-get purge -y --auto-remove git build-essential autoconf automake libtool cython3 yasm nasm \
     && rm -rf /var/lib/apt/lists/*
 # Install the Python bindings so vsrepo can find the installation
 RUN python3 -m pip install --use-pep517 vapoursynth
@@ -79,14 +79,14 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 # Build L-SMASH library with proper dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    git build-essential \
+    git build-essential autoconf automake libtool \
     && git clone https://github.com/l-smash/l-smash \
     && cd l-smash \
     && CFLAGS="-fPIC -O2" CXXFLAGS="-fPIC -O2" LDFLAGS="-Wl,-Bsymbolic" \
         ./configure --enable-shared --extra-ldflags="-Wl,-Bsymbolic" \
     && make -j$(nproc) && make install && ldconfig \
     && cd .. && rm -rf l-smash \
-    && apt-get purge -y --auto-remove git build-essential \
+    && apt-get purge -y --auto-remove git build-essential autoconf automake libtool \
     && rm -rf /var/lib/apt/lists/*
 
 # Build L-SMASH-Works VapourSynth plugin
