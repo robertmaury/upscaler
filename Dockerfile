@@ -27,10 +27,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     # Python runtime
     python3-pip python3-setuptools \
     # Essential utilities only
-    wget ffmpeg libffms2-4 \
+    wget ffmpeg libffms2-5 \
     # Minimal compression libraries
     libssl3 zlib1g libbz2-1.0 libffi8 liblzma5 \
-    libfftw3-3 libturbojpeg0 \
+    libfftw3-double3 libturbojpeg \
     # Remove GUI dependencies for headless operation
     # checkinstall qt6-base-dev libqt6websockets6-dev libqt6core5compat6-dev \
     # libboost-dev libboost-system-dev libboost-filesystem-dev \
