@@ -91,7 +91,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 # Build L-SMASH-Works VapourSynth plugin
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    git meson ninja-build pkg-config \
+    git meson ninja-build pkg-config libxxhash-dev \
     && git clone https://github.com/HomeOfAviSynthPlusEvolution/L-SMASH-Works \
     && cd L-SMASH-Works/VapourSynth \
     && PKG_CONFIG_PATH=/usr/local/lib/pkgconfig:$PKG_CONFIG_PATH \
@@ -99,7 +99,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && ninja -C build && ninja -C build install && ldconfig \
     && python3 -c "import vapoursynth as vs; c=vs.core; print('LSMAS available:', hasattr(c, 'lsmas'))" \
     && cd ../../.. && rm -rf L-SMASH-Works \
-    && apt-get purge -y --auto-remove git meson ninja-build pkg-config \
+    && apt-get purge -y --auto-remove git meson ninja-build pkg-config libxxhash-dev \
     && rm -rf /var/lib/apt/lists/*
 
 # Install other plugins using vsrepo
