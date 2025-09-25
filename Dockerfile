@@ -129,7 +129,7 @@ RUN python3 -m pip install --no-cache-dir --upgrade setuptools vsutil && \
 # Install Real-CUGAN dependencies and create VapourSynth wrapper
 RUN apt-get update && apt-get install -y --no-install-recommends \
     git \
-    && python3 -m pip install --no-cache-dir torch torchvision torchaudio \
+#    && python3 -m pip install --no-cache-dir torch torchvision torchaudio \
     && git clone https://github.com/bilibili/ailab.git /tmp/realcugan-src \
     && cd /tmp/realcugan-src/Real-CUGAN \
     && mkdir -p /usr/local/lib/realcugan \
